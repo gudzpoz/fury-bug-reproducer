@@ -5,7 +5,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [17, 23]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-13, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -13,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: ${{ matrix.version }}
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
@@ -23,6 +28,7 @@ jobs:
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
+          name: ${{ matrix.os }}-jdk-${{ matrix.version }}
           path: build/libs/
       - name: Run the JAR
-        run: java -jar build/libs/*.jar
+        run: java -jar build/libs/untitled-1.0-SNAPSHOT-all.jar
